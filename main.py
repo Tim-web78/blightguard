@@ -1,12 +1,16 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from ultralytics import YOLO
 from PIL import Image
 from pathlib import Path
 import io
+import os
 
 app = FastAPI()
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,7 +19,23 @@ app.add_middleware(
 )
 
 BASE_DIR = Path(__file__).parent
+
+# Load model
 model = YOLO(BASE_DIR / "best.pt")
+
+# Serve frontend
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/")
+def serve_home():
+    return FileResponse("static/index.html")
+
+@app.get("/{page}.html")
+def serve_page(page: str):
+    file = BASE_DIR / "static" / f"{page}.html"
+    if file.exists():
+        return FileResponse(str(file))
+    return FileResponse("static/index.html")
 
 @app.get("/classes")
 def get_classes():
@@ -32,7 +52,7 @@ async def predict(file: UploadFile = File(...)):
     for box in results.boxes:
         x1, y1, x2, y2 = map(float, box.xyxy[0])
         conf = float(box.conf[0])
-        cls  = int(box.cls[0])
+        cls = int(box.cls[0])
 
         boxes.append({
             "x1": x1,
