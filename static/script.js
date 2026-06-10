@@ -2,7 +2,7 @@
 //  BlightGuard — script.js  (complete)
 // ═══════════════════════════════════════════════════════════
 
-const API_URL = '/predict';
+const API_URL = "https://blightguard-backend.onrender.com";
 
 // ── RECOMMENDATIONS ─────────────────────────────────────────
 const RECS = {
